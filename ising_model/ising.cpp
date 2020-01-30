@@ -34,18 +34,20 @@ for (int i=0;i<n;i++){
     }
   }
 }
-// E = E / (n*n);
-return E/(n*n);
+E = E / (n*n);
+return E;
 }
 
 
-float  get_mag_under_temp(float T) {
-  int n = 40;
+float  get_mag_under_temp(float T,  int n = 40) {
+  // first parameter: temperature;
+  // second paramete: size of latice
   srand((unsigned) time(NULL));
   ArrayXXf model = ArrayXXf::Random(n,n);
   model = model.sign();
   float E = get_energy(model,n);
-for (int iter=0;iter<5e6;iter++){
+  float mean_mag = 0;
+for (int iter=0;iter<2e7;iter++){
   int flip_idx = (rand() %(n*n));
   int flip_col = flip_idx % n;
   int flip_row = flip_idx / n;
@@ -57,16 +59,23 @@ for (int iter=0;iter<5e6;iter++){
     model = new_model;
     E = new_E;
   }
+
+if (iter > 2e7-1e4){
+  mean_mag += abs(model.sum());
+  // std::cout << E << '\n';
 }
-float mean_mag = model.sum();
-return mean_mag;
+
+}
+
+return mean_mag/1e4;
 }
 
 int main() {
-  VectorXd T = VectorXd::LinSpaced(10,0.00000001,3);
-  for (int i=0;i<10;i++){
-    float mean_mag = get_mag_under_temp(T(i));
-    std::cout <<  abs(mean_mag) << '\n';
+  int step = 100;
+  VectorXd T = VectorXd::LinSpaced(step,0.0001,3);
+  for (int i=0;i<step;i++){
+    float mean_mag = get_mag_under_temp(T(i),10);
+    std::cout << T(i) << "\t"<< abs(mean_mag) << '\n';
   }
   return 0;
 }
